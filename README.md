@@ -1,4 +1,4 @@
-# infrastructure
+# Infrastructure
 
 Manages the infrastructure I use for side projects. Before any of the GCP
 terraform can be used, it is required that we provision a service account and
