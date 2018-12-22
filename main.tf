@@ -39,6 +39,10 @@ resource "google_project_service" "cloudresourcemanager" {
   service = "cloudresourcemanager.googleapis.com"
 }
 
+resource "google_project_service" "container" {
+  service = "container.googleapis.com"
+}
+
 resource "google_project_service" "storage" {
   service = "storage-api.googleapis.com"
 }
