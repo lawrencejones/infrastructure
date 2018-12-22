@@ -7,7 +7,10 @@ key for the admin user:
 ```shell
 gcloud iam service-accounts create terraform --project lawrjone
 gcloud iam service-accounts keys create ~/.config/gcloud/lawrjone-terraform.json --iam-account terraform@lawrjone.iam.gserviceaccount.com --project lawrjone
-gcloud projects add-iam-policy-binding lawrjone --project lawrjone --role roles/owner --member serviceAccount:terraform@lawrjone.iam.gserviceaccount.com
+
+for role in 'roles/owner' 'roles/storage.admin'; do
+  gcloud projects add-iam-policy-binding lawrjone --project lawrjone --role "${role}" --member serviceAccount:terraform@lawrjone.iam.gserviceaccount.com
+done
 
 # Enable core API services
 for api in 'cloudresourcemanager' 'cloudbilling' 'iam' 'compute'; do
