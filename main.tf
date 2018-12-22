@@ -25,10 +25,38 @@ provider "google" {
   project = "${var.default_project}"
 }
 
-resource "google_project" "lawrjone" {
-  name            = "lawrjone"
+################################################################################
+# Project
+################################################################################
+
+resource "google_project" "default" {
+  name            = "${var.default_project}"
   project_id      = "206046083972"
   billing_account = "${var.billing_account}"
+}
+
+resource "google_project_service" "cloudresourcemanager" {
+  service = "cloudresourcemanager.googleapis.com"
+}
+
+resource "google_project_service" "storage" {
+  service = "storage-api.googleapis.com"
+}
+
+resource "google_project_service" "cloudbilling" {
+  service = "cloudbilling.googleapis.com"
+}
+
+resource "google_project_service" "iam" {
+  service = "iam.googleapis.com"
+}
+
+resource "google_project_service" "compute" {
+  service = "compute.googleapis.com"
+}
+
+resource "google_project_service" "cloudkms" {
+  service = "cloudkms.googleapis.com"
 }
 
 ################################################################################
