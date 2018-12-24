@@ -35,6 +35,10 @@ resource "google_project" "default" {
   billing_account = "${var.billing_account}"
 }
 
+resource "google_project_service" "cloudbuild" {
+  service = "cloudbuild.googleapis.com"
+}
+
 resource "google_project_service" "cloudresourcemanager" {
   service = "cloudresourcemanager.googleapis.com"
 }
