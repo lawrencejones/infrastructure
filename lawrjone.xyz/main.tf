@@ -25,7 +25,7 @@ provider "cloudflare" {
 resource "cloudflare_record" "gsuite_verification" {
   domain = "lawrjone.xyz"
   name   = "@"
-  value  = "google-site-verification=LkRX9O_g5RERR6kGtMsazedOlIhMrez1c6lQawJK0xU"
+  value  = "google-site-verification=mr-VbSc9nKUdFa-Pe4xl0AedX3hCAI_DbYhJ_P_my8E"
   type   = "TXT"
 }
 
