@@ -81,3 +81,13 @@ resource "google_storage_bucket" "tfstate" {
   location      = "europe-west2"
   storage_class = "REGIONAL"
 }
+
+################################################################################
+# Storage
+################################################################################
+
+resource "google_storage_bucket" "dropbox" {
+  name          = "lawrjone-dropbox"
+  location      = "${var.region}"
+  storage_class = "REGIONAL"
+}

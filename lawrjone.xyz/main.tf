@@ -70,3 +70,41 @@ resource "cloudflare_record" "gsuite_mx_google_alt_4" {
   type     = "MX"
   priority = "10"
 }
+
+################################################################################
+# Security
+################################################################################
+
+resource "cloudflare_page_rule" "https" {
+  target = "http://*lawrjone.xyz/*"
+  zone   = "lawrjone.xyz"
+
+  actions {
+    always_use_https         = true
+    automatic_https_rewrites = "on"
+  }
+}
+
+################################################################################
+# Sites
+################################################################################
+
+resource "cloudflare_page_rule" "root_to_blog" {
+  target = "lawrjone.xyz/*"
+  zone   = "lawrjone.xyz"
+
+  actions {
+    forwarding_url = [{
+      url         = "https://blog.lawrjone.xyz/"
+      status_code = 302
+    }]
+  }
+}
+
+resource "cloudflare_record" "blog" {
+  domain  = "lawrjone.xyz"
+  name    = "blog"
+  value   = "c.storage.googleapis.com"
+  type    = "CNAME"
+  proxied = true
+}
