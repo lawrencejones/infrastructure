@@ -1,9 +1,9 @@
 ################################################################################
-# blog.lawrjone.xyz
+# blog.lawrencejones.dev
 ################################################################################
 
 resource "google_storage_bucket" "blog" {
-  name          = "blog.lawrjone.xyz"
+  name          = "blog.lawrencejones.dev"
   location      = "${var.region}"
   storage_class = "REGIONAL"
 
