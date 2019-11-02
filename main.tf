@@ -9,9 +9,8 @@
 
 terraform {
   backend "gcs" {
-    bucket  = "lawrjone-tfstate"
-    prefix  = "terraform/state"
-    project = "lawrjone"
+    bucket = "lawrjone-tfstate"
+    prefix = "terraform/state"
   }
 }
 
@@ -20,9 +19,15 @@ terraform {
 ################################################################################
 
 provider "google" {
-  region  = "${var.region}"
-  version = "1.20"
-  project = "${var.default_project}"
+  region  = var.region
+  version = "2.18.1"
+  project = var.default_project
+}
+
+provider "google-beta" {
+  region  = var.region
+  version = "2.18.1"
+  project = var.default_project
 }
 
 ################################################################################
@@ -90,4 +95,33 @@ resource "google_storage_bucket" "dropbox" {
   name          = "lawrjone-dropbox"
   location      = "${var.region}"
   storage_class = "REGIONAL"
+}
+
+################################################################################
+# Networking
+################################################################################
+
+# This project contains machines that only have private interfaces. Provision
+# Cloud NAT to enable these machines to reach externally.
+
+data "google_compute_network" "default" {
+  name = "default"
+}
+
+resource "google_compute_router" "default" {
+  name    = "default"
+  network = data.google_compute_network.default.name
+}
+
+resource "google_compute_router_nat" "egress" {
+  name   = "egress"
+  router = google_compute_router.default.name
+  region = var.region
+
+  # We don't need to whitelist anything in this project, so we don't need to
+  # manage the IP addresses.
+  nat_ip_allocate_option = "AUTO_ONLY"
+
+  # Allow any resource within this project to reach out via Cloud NAT
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 }
