@@ -1,0 +1,20 @@
+---
+namespace: prometheus
+commonLabels:
+  app: prometheus
+
+images:
+  - name: quay.io/prometheus/prometheus
+    newTag: v2.13.1
+
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - statefulset.yaml
+  - service.yaml
+  - ingress.yaml
+
+configMapGenerator:
+  - name: config
+    files:
+      - config/prometheus.yaml

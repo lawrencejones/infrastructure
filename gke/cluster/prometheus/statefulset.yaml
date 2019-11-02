@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: prometheus
+spec:
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  replicas: 1
+  serviceName: prometheus
+  selector:
+    matchLabels: &labels
+      role: backend
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      serviceAccountName: prometheus
+      securityContext:
+        # modified volumes to be owned and writable by the GID specified
+        fsGroup: 65534 # nogroup prometheus default
+      containers:
+        - name: app
+          image: quay.io/prometheus/prometheus:tag
+          imagePullPolicy: IfNotPresent
+          args:
+            - --config.file=/etc/app/prometheus.yaml
+            - --web.listen-address=0.0.0.0:9090
+            - --storage.tsdb.path=/data/prometheus
+            - --storage.tsdb.retention.time=14d
+            - --web.enable-lifecycle
+            - --web.enable-admin-api
+            - --web.external-url=https://prometheus.lawrjone.xyz
+          ports:
+            - containerPort: 9090
+              name: metrics
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+          volumeMounts:
+            - name: config
+              mountPath: /etc/app
+              readOnly: true
+            - name: pvc-prometheus
+              mountPath: /data
+      volumes:
+        - name: config
+          configMap:
+            name: config
+  volumeClaimTemplates:
+    - metadata:
+        name: pvc-prometheus
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 20Gi

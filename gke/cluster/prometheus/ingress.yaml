@@ -1,0 +1,15 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: prometheus
+  annotations:
+    kubernetes.io/ingress.allow-http: false
+spec:
+  rules:
+    - host: prometheus.lawrjone.xyz
+      http:
+        paths:
+          - backend:
+              serviceName: prometheus
+              servicePort: 9090
