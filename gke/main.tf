@@ -103,6 +103,12 @@ resource "google_container_node_pool" "primary_01" {
 
   node_count = 1
 
+  # Hands-free management
+  management {
+    auto_repair  = true
+    auto_upgrade = true
+  }
+
   node_config {
     machine_type = "n1-standard-2"
     preemptible  = true
