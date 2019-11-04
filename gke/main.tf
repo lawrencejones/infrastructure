@@ -26,6 +26,39 @@ provider "google-beta" {
 }
 
 ################################################################################
+# Addresses
+################################################################################
+
+# Use this address for the ingress that will support the acme challenge for
+# LetsEncrypt certificate management.
+resource "google_compute_global_address" "acme_challenge" {
+  name = "acme-challenge"
+}
+
+################################################################################
+# Firewall
+################################################################################
+
+resource "google_compute_firewall" "cert_manager" {
+  name        = "cert-manager"
+  description = "Provide access for the API server to contact the cert-manager webhook receiving from the Kubernetes control plane"
+  network     = "default"
+  target_tags = ["gke-primary"]
+  allow {
+    protocol = "TCP"
+    ports    = ["6443"]
+  }
+
+  # This is probably the GKE control plane network, but I'm not sure. There's
+  # nothing else in this project right now, so being restrictive doesn't benefit
+  # us.
+  #
+  # https://www.revsys.com/tidbits/jetstackcert-manager-gke-private-clusters/
+  #
+  # source_ranges = ["172.16.0.0/28"]
+}
+
+################################################################################
 # GKE
 ################################################################################
 
