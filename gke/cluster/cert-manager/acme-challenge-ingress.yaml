@@ -1,0 +1,16 @@
+# This ingress is managed by the clusterissuer for LetsEncrypt. The only thing
+# we do is ensure a static IP address, so we can wire-up Cloudflare to redirect
+# us to this IP address, where we'll serve the correct ACME challenge token.
+#
+# We don't expose any DNS for this ingress.
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: acme-challenge
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: acme-challenge
+spec:
+  rules:
+    # Bogus rule, we expect the cert-manager operator to modify this
+    - host: acme-challenge.lawrjone.xyz

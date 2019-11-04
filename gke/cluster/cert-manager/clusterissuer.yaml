@@ -1,0 +1,23 @@
+# Provide a single certificate issuer for the entire GKE cluster. We'll validate
+# LetsEncrypt requests by leveraging an ingress called acme-challenge.
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: lawrjone@gmail.com
+    privateKeySecretRef:
+      name: letsencrypt
+    solvers:
+      - selector: {}  # match all domains
+        http01:
+          ingress:
+            name: acme-challenge
+            namespace: cert-manager
+            podTemplate:
+              metadata:
+                labels:
+                  app: acme-solver

@@ -1,0 +1,11 @@
+# Validation needs to be disabled when applying this project. Official docs
+# recommend you do this, for vague reasons.
+#
+# kubectl apply --validate=false -k .
+---
+# cert-manager isn't very compatible with a kustomize installation process.
+# https://github.com/kubernetes-sigs/kustomize/issues/970
+resources:
+  - resources.yaml
+  - acme-challenge-ingress.yaml
+  - clusterissuer.yaml

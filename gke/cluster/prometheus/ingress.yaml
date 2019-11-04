@@ -4,8 +4,13 @@ kind: Ingress
 metadata:
   name: prometheus
   annotations:
-    kubernetes.io/ingress.allow-http: false
+    kubernetes.io/ingress.allow-http: "false"
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
+  tls:
+    - hosts:
+        - prometheus.lawrjone.xyz
+      secretName: prometheus-lawrjone-xyz
   rules:
     - host: prometheus.lawrjone.xyz
       http:
