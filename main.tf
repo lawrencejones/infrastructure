@@ -88,6 +88,20 @@ resource "google_storage_bucket" "tfstate" {
 }
 
 ################################################################################
+# IAM
+################################################################################
+
+# Permit these users to access IAP protected resources
+resource "google_project_iam_binding" "iap" {
+  role = "roles/iap.httpsResourceAccessor"
+
+  members = [
+    "user:lawrjone@gmail.com",
+    "user:lawrence@gocardless.com",
+  ]
+}
+
+################################################################################
 # Storage
 ################################################################################
 
