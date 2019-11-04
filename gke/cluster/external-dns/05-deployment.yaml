@@ -16,7 +16,9 @@ spec:
         - name: external-dns
           image: registry.opensource.zalan.do/teapot/external-dns:v0.5.17
           args:
-            - --source=ingress
+            - --interval=30s                # bit faster than 1m
+            - --source=ingress              # provide both ingress and...
+            - --source=service              # service resources
             - --domain-filter=lawrjone.xyz
             - --provider=cloudflare
           env:

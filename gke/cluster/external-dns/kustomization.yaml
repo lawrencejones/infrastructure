@@ -8,5 +8,5 @@ resources:
   - 01-serviceaccount.yaml
   - 02-clusterrole.yaml
   - 03-clusterrolebinding.yaml
-  - 04-cloudflare-credentials.yaml  # requires hand-editing
+  # - 04-cloudflare-credentials.yaml  # requires hand-editing
   - 05-deployment.yaml
