@@ -7,9 +7,14 @@ metadata:
     external-dns.alpha.kubernetes.io/hostname: vault.lawrjone.xyz
 spec:
   type: LoadBalancer
+  # Don't send this via the cluster routing, as we want connections to go
+  # directly to the vault pod so we can better audit the requester IP
+  externalTrafficPolicy: Local
+  selector:
+    role: backend
   ports:
     - name: http
-      port: 433
+      port: 443
       targetPort: 8200
     - name: server
       port: 8201
