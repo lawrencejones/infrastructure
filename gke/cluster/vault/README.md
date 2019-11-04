@@ -38,22 +38,44 @@ This process will turn on Google sign-in for any Google email address.
     ```
   - Enable and configure the oidc plugin:
     ```console
+    # This enables the oidc plugin, required before we can configure
     $ vault auth enable oidc
     Success! Enabled oidc auth method at: oidc/
+
+    # Configure the OAuth parameters, and the default role that will be assigned
+    # to users that successfully auth with this plugin
     $ vault write auth/oidc/config \
         oidc_discovery_url="https://accounts.google.com" \
         oidc_client_id="$GOOGLE_API_CLIENT_ID" \
         oidc_client_secret="$GOOGLE_API_CLIENT_SECRET" \
         default_role="google"
     Success! Data written to: auth/oidc/config
-    $ vault write auth/oidc/role/google \
-        user_claim="sub" \
-        bound_audiences="$GOOGLE_API_CLIENT_ID" \
-        allowed_redirect_uris="https://vault.lawrjone.xyz/ui/vault/auth/oidc/oidc/callback" \
-        role_type="oidc" \
-        oidc_scopes="openid" \
-        policies=default \
-        ttl=1h
+
+    # Let it be the email key of the successful authorisation challenge that we
+    # use a 'user claim'. This means we'll map users to their Google email,
+    # which will be easier than sub (unique user ID). The email field is only
+    # present when the oauth scopes include email.
+    #
+    # The 'hd' field is the domain of the authorised email. By providing a list,
+    # you are saying anyone with emails matching those domains may authorise for
+    # this role.
+    #
+    # The default role is pretty useless, so you'll want to configure something
+    # else for that.
+    $ vault write -force auth/oidc/role/google -<<EOF
+    {
+      "user_claim": "email",
+      "bound_audiences": "$GOOGLE_API_CLIENT_ID",
+      "bound_claims": {
+        "hd": ["gocardless.com", "lawrencejones.dev", "lawrjone.xyz"]
+      },
+      "allowed_redirect_uris": ["https://vault.lawrjone.xyz/ui/vault/auth/oidc/oidc/callback"],
+      "role_type": "oidc",
+      "oidc_scopes": "openid,email",
+      "policies": "default",
+      "ttl": "1h"
+    }
+    EOF
     ```
-  - You should now be able to login with any email address via Google auth login
-    by going to https://vault.lawrjone.xyz
+  - You should now be able to login with any permitted email address via Google
+    auth login by going to https://vault.lawrjone.xyz
