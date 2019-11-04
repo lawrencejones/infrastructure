@@ -10,32 +10,6 @@ terraform {
 }
 
 ################################################################################
-# Provider
-################################################################################
-
-provider "google" {
-  region  = var.region
-  version = "2.18.1"
-  project = var.default_project
-}
-
-provider "google-beta" {
-  region  = var.region
-  version = "2.18.1"
-  project = var.default_project
-}
-
-################################################################################
-# Addresses
-################################################################################
-
-# Use this address for the ingress that will support the acme challenge for
-# LetsEncrypt certificate management.
-resource "google_compute_global_address" "acme_challenge" {
-  name = "acme-challenge"
-}
-
-################################################################################
 # Firewall
 ################################################################################
 
