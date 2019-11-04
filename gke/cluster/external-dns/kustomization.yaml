@@ -1,0 +1,12 @@
+---
+namespace: external-dns
+commonLabels:
+  app: external-dns
+
+resources:
+  - 00-namespace.yaml
+  - 01-serviceaccount.yaml
+  - 02-clusterrole.yaml
+  - 03-clusterrolebinding.yaml
+  - 04-cloudflare-credentials.yaml  # requires hand-editing
+  - 05-deployment.yaml
