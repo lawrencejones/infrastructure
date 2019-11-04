@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: vault-tls
+spec:
+  secretName: vault-tls
+  duration: 2160h
+  renewBefore: 360h
+  commonName: vault.lawrjone.xyz
+  dnsNames:
+    - vault.lawrjone.xyz
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer

@@ -1,0 +1,24 @@
+---
+namespace: vault
+commonLabels:
+  app: vault
+
+images:
+  - name: gcr.io/hightowerlabs/vault-init
+    digest: sha256:7caafbbb68d15c69487d4e34d88f7ccc562a779a17757369b227e4863d034d72
+  - name: vault
+    newTag: 1.2.3
+
+resources:
+  - 00-namespace.yaml
+  - 01-service.yaml
+  - 02-certificate.yaml
+  - 03-serviceaccount.yaml
+  - 04-statefulset.yaml
+
+configMapGenerator:
+  - name: vault
+    literals:
+      - api-addr=https://vault.lawrjone.xyz
+      - gcs-bucket-name=lawrjone-vault
+      - kms-key-id=projects/lawrjone/locations/global/keyRings/vault/cryptoKeys/vault-init
