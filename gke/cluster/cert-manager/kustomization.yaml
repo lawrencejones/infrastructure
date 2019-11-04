@@ -7,5 +7,5 @@
 # https://github.com/kubernetes-sigs/kustomize/issues/970
 resources:
   - resources.yaml
-  - acme-challenge-ingress.yaml
+  - cloudflare-credentials.yaml  # requires hand-editing
   - clusterissuer.yaml
