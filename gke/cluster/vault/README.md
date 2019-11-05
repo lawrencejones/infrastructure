@@ -17,6 +17,8 @@ This process will turn on Google sign-in for any Google email address.
 - Deploy using kustomize (`kubectl apply -k .`)
 - Create OAuth credentials [here](https://console.cloud.google.com/apis/credentials?authuser=1&folder)
   - Authorised redirect should be https://vault.lawrjone.xyz/ui/vault/auth/oidc/oidc/callback
+  - Optionally add http://localhost:8250/oidc/callback as a redirect URL to
+    permit authenticating locally using the vault client
   - Capture OAuth client ID and secret
 - Capture the root token, so that we're able to configure Vault
   - Pull the token from GCS and decrypt it with gcloud:
@@ -69,7 +71,10 @@ This process will turn on Google sign-in for any Google email address.
       "bound_claims": {
         "hd": ["gocardless.com", "lawrencejones.dev", "lawrjone.xyz"]
       },
-      "allowed_redirect_uris": ["https://vault.lawrjone.xyz/ui/vault/auth/oidc/oidc/callback"],
+      "allowed_redirect_uris": [
+        "https://vault.lawrjone.xyz/ui/vault/auth/oidc/oidc/callback",
+        "http://localhost:8250/oidc/callback"
+      ],
       "role_type": "oidc",
       "oidc_scopes": "openid,email",
       "policies": "default",
@@ -79,3 +84,6 @@ This process will turn on Google sign-in for any Google email address.
     ```
   - You should now be able to login with any permitted email address via Google
     auth login by going to https://vault.lawrjone.xyz
+  - You can also login using `vault login -method=oidc role=google` provided
+    either `VAULT_ADDR` is set to `https://vault.lawrjone.xyz` or the `-addr`
+    field is provided

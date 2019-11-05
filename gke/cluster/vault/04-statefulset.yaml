@@ -72,6 +72,11 @@ spec:
           image: gcr.io/hightowerlabs/vault-init
           imagePullPolicy: IfNotPresent
           env:
+            # Locally, we want the vault client to skip TLS certificate
+            # validation. We need this, as the certificate that Vault is
+            # configured with only has vault.lawrjone.xyz as the hostname.
+            - name: VAULT_SKIP_VERIFY
+              value: "true"
             - name: CHECK_INTERVAL
               value: "10"
             - name: GCS_BUCKET_NAME
