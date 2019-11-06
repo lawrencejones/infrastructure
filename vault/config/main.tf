@@ -42,7 +42,7 @@ data "google_kms_secret" "vault_token" {
 }
 
 ################################################################################
-# Auth backends
+# Google authentication
 ################################################################################
 
 locals {
@@ -50,20 +50,27 @@ locals {
   oauth_client_secret = "Cq_d8aZa_wkngUI2NxIXbnAS"
 }
 
-resource "vault_jwt_auth_backend" "google" {
+resource "vault_jwt_auth_backend" "oidc" {
   type = "oidc"
 
-  path        = "google"
-  description = "Google login"
+  path         = "oidc"
+  description  = "Google login"
+  default_role = "default"
 
   oidc_discovery_url = "https://accounts.google.com"
   oidc_client_id     = local.oauth_client_id
   oidc_client_secret = local.oauth_client_secret
+
+  lifecycle {
+    ignore_changes = [oidc_client_secret]
+  }
 }
 
-resource "vault_jwt_auth_backend_role" "google_default" {
-  backend   = vault_jwt_auth_backend.google.path
+resource "vault_jwt_auth_backend_role" "oidc_default" {
+  backend   = vault_jwt_auth_backend.oidc.path
   role_name = "default"
+
+  token_policies = ["developer"]
 
   user_claim      = "email"
   bound_audiences = [local.oauth_client_id]
@@ -78,4 +85,80 @@ resource "vault_jwt_auth_backend_role" "google_default" {
     "https://vault.lawrjone.xyz/ui/vault/auth/oidc/oidc/callback",
     "http://localhost:8250/oidc/callback",
   ]
+}
+
+################################################################################
+# Kubernetes authentication
+################################################################################
+
+resource "vault_auth_backend" "kubernetes_primary" {
+  type = "kubernetes"
+  path = "kubernetes.primary"
+}
+
+data "google_container_cluster" "primary" {
+  name     = "primary"
+  location = var.region
+}
+
+# resource "vault_kubernetes_auth_backend_config" "primary" {
+#   backend         = vault_auth_backend.kubernetes_primary.path
+#   kubernetes_host = "https://${data.google_container_cluster.primary.endpoint}"
+# }
+
+resource "null_resource" "config" {
+  provisioner "local-exec" {
+    command = "echo ${jsonencode(data.google_container_cluster.primary.node_config)} > /tmp/config.json"
+  }
+}
+
+################################################################################
+# Policies
+################################################################################
+
+resource "vault_policy" "developer" {
+  name   = "developer"
+  policy = data.vault_policy_document.developer.hcl
+}
+
+data "vault_policy_document" "developer" {
+  # Allow users to see all mounted secret engines
+  rule {
+    path         = "sys/mounts"
+    capabilities = ["read", "list"]
+  }
+
+  # Developers should be able to create new secrets, and view what exists
+  rule {
+    path         = "secret/*"
+    capabilities = ["list", "create"]
+  }
+}
+
+resource "vault_policy" "application" {
+  name   = "application"
+  policy = data.vault_policy_document.application.hcl
+}
+
+data "vault_policy_document" "application" {
+  rule {
+    path         = "secret/data/{{identity.entity.aliases.auth_kubernetes_2208e21b.metadata.service_account_namespace}}/{{identity.entity.aliases.auth_kubernetes_2208e21b.metadata.service_account_name}}/*"
+    capabilities = ["read", "list"]
+  }
+}
+
+################################################################################
+# Engines
+################################################################################
+
+resource "vault_mount" "secret" {
+  path        = "secret"
+  type        = "kv"
+  description = "Generic secrets store, including environment variables"
+
+  # Version 2 is the latest:
+  # https://www.vaultproject.io/docs/secrets/kv/index.html
+  options = {
+    version = "2"
+  }
 }
