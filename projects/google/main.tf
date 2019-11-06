@@ -10,7 +10,7 @@
 terraform {
   backend "gcs" {
     bucket = "lawrjone-tfstate"
-    prefix = "terraform/state"
+    prefix = "projects/google"
   }
 }
 

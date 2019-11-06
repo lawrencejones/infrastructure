@@ -1,0 +1,4 @@
+---
+resources:
+  - 00-clusterrolebinding-auth-delegator.yaml
+  - 01-configmap-vault.yaml

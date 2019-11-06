@@ -4,9 +4,8 @@
 
 terraform {
   backend "gcs" {
-    bucket  = "lawrjone-tfstate"
-    prefix  = "terraform/state/lawrjone.xyz"
-    project = "lawrjone"
+    bucket = "lawrjone-tfstate"
+    prefix = "projects/lawrjone.xyz"
   }
 }
 

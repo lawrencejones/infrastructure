@@ -5,7 +5,7 @@
 terraform {
   backend "gcs" {
     bucket = "lawrjone-tfstate"
-    prefix = "terraform/state/vault/config"
+    prefix = "projects/google/vault/config"
   }
 }
 
@@ -66,7 +66,7 @@ resource "vault_jwt_auth_backend" "oidc" {
   }
 }
 
-resource "vault_jwt_auth_backend_role" "oidc_default" {
+resource "vault_jwt_auth_backend_role" "oidc" {
   backend   = vault_jwt_auth_backend.oidc.path
   role_name = "default"
 
@@ -101,15 +101,23 @@ data "google_container_cluster" "primary" {
   location = var.region
 }
 
-# resource "vault_kubernetes_auth_backend_config" "primary" {
-#   backend         = vault_auth_backend.kubernetes_primary.path
-#   kubernetes_host = "https://${data.google_container_cluster.primary.endpoint}"
-# }
+resource "vault_kubernetes_auth_backend_config" "primary" {
+  backend            = vault_auth_backend.kubernetes_primary.path
+  kubernetes_host    = "https://${data.google_container_cluster.primary.endpoint}"
+  kubernetes_ca_cert = base64decode(data.google_container_cluster.primary.master_auth.0.cluster_ca_certificate)
+}
 
-resource "null_resource" "config" {
-  provisioner "local-exec" {
-    command = "echo ${jsonencode(data.google_container_cluster.primary.node_config)} > /tmp/config.json"
-  }
+resource "vault_kubernetes_auth_backend_role" "primary" {
+  backend   = vault_auth_backend.kubernetes_primary.path
+  role_name = "default"
+  token_ttl = 3600 # 300 # 5m
+  token_policies = [
+    vault_policy.kubernetes_primary_reader.name,
+  ]
+
+  # https://github.com/hashicorp/vault-plugin-auth-kubernetes/pull/66
+  bound_service_account_names      = split(",", "a*,b*,c*,d*,e*,f*,h*,i*,j*,k*,l*,m*,n*,o*,p*,q*,r*,s*,t*,u*,v*,w*,x*,y*,z*,1*,2*,3*,4*,5*,6*,7*,8*,9*,0*")
+  bound_service_account_namespaces = ["*"]
 }
 
 ################################################################################
@@ -135,15 +143,33 @@ data "vault_policy_document" "developer" {
   }
 }
 
-resource "vault_policy" "application" {
-  name   = "application"
-  policy = data.vault_policy_document.application.hcl
+# One policy per Kubernetes cluster
+resource "vault_policy" "kubernetes_primary_reader" {
+  name   = "kubernetes-primary-reader"
+  policy = data.vault_policy_document.kubernetes_primary_reader.hcl
 }
 
-data "vault_policy_document" "application" {
+locals {
+  kubernetes_primary_reader_template = join(
+    "/", [
+      "secret/%s/kubernetes",
+      "primary",
+      "{{identity.entity.aliases.${vault_auth_backend.kubernetes_primary.accessor}.metadata.service_account_namespace}}",
+      "{{identity.entity.aliases.${vault_auth_backend.kubernetes_primary.accessor}.metadata.service_account_name}}",
+      "*",
+    ],
+  )
+}
+
+data "vault_policy_document" "kubernetes_primary_reader" {
   rule {
-    path         = "secret/data/{{identity.entity.aliases.auth_kubernetes_2208e21b.metadata.service_account_namespace}}/{{identity.entity.aliases.auth_kubernetes_2208e21b.metadata.service_account_name}}/*"
-    capabilities = ["read", "list"]
+    path         = format(local.kubernetes_primary_reader_template, "data")
+    capabilities = ["read"]
+  }
+
+  rule {
+    path         = format(local.kubernetes_primary_reader_template, "metadata")
+    capabilities = ["list"]
   }
 }
 
