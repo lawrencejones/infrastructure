@@ -49,46 +49,24 @@ spec:
           args:
             - |
               cat > /etc/vault/config/vault.hcl <<EOF
+              ui = true
+
               listener "tcp" {
                 address = "0.0.0.0:8200"
                 tls_cert_file = "/etc/vault/tls/tls.crt"
                 tls_key_file = "/etc/vault/tls/tls.key"
                 tls_min_version = "tls12"
               }
+
               storage "gcs" {
                 bucket = "${GCS_BUCKET_NAME}"
                 ha_enabled = "true"
               }
-              ui = true
               EOF
           volumeMounts:
             - name: vault-config
               mountPath: /etc/vault/config
       containers:
-        ################################################################################
-        # vault unsealing
-        ################################################################################
-        - name: vault-init
-          image: gcr.io/hightowerlabs/vault-init
-          imagePullPolicy: IfNotPresent
-          env:
-            # Locally, we want the vault client to skip TLS certificate
-            # validation. We need this, as the certificate that Vault is
-            # configured with only has vault.lawrjone.xyz as the hostname.
-            - name: VAULT_SKIP_VERIFY
-              value: "true"
-            - name: CHECK_INTERVAL
-              value: "10"
-            - name: GCS_BUCKET_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: vault
-                  key: gcs-bucket-name
-            - name: "KMS_KEY_ID"
-              valueFrom:
-                configMapKeyRef:
-                  name: vault
-                  key: kms-key-id
         ################################################################################
         # server
         ################################################################################
@@ -137,6 +115,30 @@ spec:
               mountPath: /etc/vault/config
             - name: vault-tls
               mountPath: /etc/vault/tls
+        ################################################################################
+        # unsealer
+        ################################################################################
+        - name: unsealer
+          image: gcr.io/hightowerlabs/vault-init
+          imagePullPolicy: IfNotPresent
+          env:
+            # Locally, we want the vault client to skip TLS certificate
+            # validation. We need this, as the certificate that Vault is
+            # configured with only has vault.lawrjone.xyz as the hostname.
+            - name: VAULT_SKIP_VERIFY
+              value: "true"
+            - name: CHECK_INTERVAL
+              value: "10"
+            - name: GCS_BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: vault
+                  key: gcs-bucket-name
+            - name: "KMS_KEY_ID"
+              valueFrom:
+                configMapKeyRef:
+                  name: vault
+                  key: kms-key-id
       volumes:
         - name: vault-config
           emptyDir: {}
