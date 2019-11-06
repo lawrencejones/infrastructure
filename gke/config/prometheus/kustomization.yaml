@@ -8,11 +8,11 @@ images:
     newTag: v2.13.1
 
 resources:
-  - namespace.yaml
-  - serviceaccount.yaml
-  - statefulset.yaml
-  - service.yaml
-  - ingress.yaml
+  - 00-namespace.yaml
+  - 01-serviceaccount.yaml
+  - 02-statefulset.yaml
+  - 03-service.yaml
+  - 04-ingress.yaml
 
 configMapGenerator:
   - name: config

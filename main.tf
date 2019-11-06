@@ -85,6 +85,12 @@ resource "google_project_iam_binding" "iap" {
   ]
 }
 
+# Permit Dyson to administrate this project while we pair
+resource "google_project_iam_member" "owner" {
+  role   = "roles/owner"
+  member = "user:dyson@gocardless.com"
+}
+
 ################################################################################
 # Storage
 ################################################################################

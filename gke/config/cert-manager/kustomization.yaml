@@ -6,6 +6,6 @@
 # cert-manager isn't very compatible with a kustomize installation process.
 # https://github.com/kubernetes-sigs/kustomize/issues/970
 resources:
-  - resources.yaml
-  # - cloudflare-credentials.yaml  # requires hand-editing
-  - clusterissuer.yaml
+  - 01-resources.yaml
+  # - 02-cloudflare-credentials.yaml  # requires hand-editing
+  - 03-clusterissuer.yaml
