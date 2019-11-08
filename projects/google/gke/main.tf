@@ -33,6 +33,23 @@ resource "google_compute_firewall" "cert_manager" {
 }
 
 ################################################################################
+# Vault
+################################################################################
+
+# Provide this kubernetes cluster with the ability to access vault, by
+# presenting its own service account token for vaildation back against the GKE
+# cluster.
+module "primary_gke_vault_access" {
+  source = "./modules/gke_vault_access"
+
+  vault_address      = "https://vault.lawrjone.xyz"
+  cluster_identifier = "primary"
+
+  kubernetes_cluster_name     = google_container_cluster.primary.name
+  kubernetes_cluster_location = google_container_cluster.primary.location
+}
+
+################################################################################
 # GKE
 ################################################################################
 

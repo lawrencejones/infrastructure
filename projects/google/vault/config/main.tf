@@ -56,39 +56,6 @@ resource "vault_jwt_auth_backend_role" "oidc" {
 }
 
 ################################################################################
-# Kubernetes authentication
-################################################################################
-
-resource "vault_auth_backend" "kubernetes_primary" {
-  type = "kubernetes"
-  path = "kubernetes.primary"
-}
-
-data "google_container_cluster" "primary" {
-  name     = "primary"
-  location = var.region
-}
-
-resource "vault_kubernetes_auth_backend_config" "primary" {
-  backend            = vault_auth_backend.kubernetes_primary.path
-  kubernetes_host    = "https://${data.google_container_cluster.primary.endpoint}"
-  kubernetes_ca_cert = base64decode(data.google_container_cluster.primary.master_auth.0.cluster_ca_certificate)
-}
-
-resource "vault_kubernetes_auth_backend_role" "primary" {
-  backend   = vault_auth_backend.kubernetes_primary.path
-  role_name = "default"
-  token_ttl = 3600 # 300 # 5m
-  token_policies = [
-    vault_policy.kubernetes_primary_reader.name,
-  ]
-
-  # https://github.com/hashicorp/vault-plugin-auth-kubernetes/pull/66
-  bound_service_account_names      = split(",", "a*,b*,c*,d*,e*,f*,h*,i*,j*,k*,l*,m*,n*,o*,p*,q*,r*,s*,t*,u*,v*,w*,x*,y*,z*,1*,2*,3*,4*,5*,6*,7*,8*,9*,0*")
-  bound_service_account_namespaces = ["*"]
-}
-
-################################################################################
 # Policies
 ################################################################################
 
@@ -108,36 +75,6 @@ data "vault_policy_document" "developer" {
   rule {
     path         = "secret/*"
     capabilities = ["list", "create"]
-  }
-}
-
-# One policy per Kubernetes cluster
-resource "vault_policy" "kubernetes_primary_reader" {
-  name   = "kubernetes-primary-reader"
-  policy = data.vault_policy_document.kubernetes_primary_reader.hcl
-}
-
-locals {
-  kubernetes_primary_reader_template = join(
-    "/", [
-      "secret/%s/kubernetes",
-      "primary",
-      "{{identity.entity.aliases.${vault_auth_backend.kubernetes_primary.accessor}.metadata.service_account_namespace}}",
-      "{{identity.entity.aliases.${vault_auth_backend.kubernetes_primary.accessor}.metadata.service_account_name}}",
-      "*",
-    ],
-  )
-}
-
-data "vault_policy_document" "kubernetes_primary_reader" {
-  rule {
-    path         = format(local.kubernetes_primary_reader_template, "data")
-    capabilities = ["read"]
-  }
-
-  rule {
-    path         = format(local.kubernetes_primary_reader_template, "metadata")
-    capabilities = ["list"]
   }
 }
 
