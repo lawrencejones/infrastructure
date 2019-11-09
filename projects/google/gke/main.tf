@@ -23,13 +23,9 @@ resource "google_compute_firewall" "cert_manager" {
     ports    = ["6443"]
   }
 
-  # This is probably the GKE control plane network, but I'm not sure. There's
-  # nothing else in this project right now, so being restrictive doesn't benefit
-  # us.
-  #
+  # This is the GKE control plane network, as configured below:
   # https://www.revsys.com/tidbits/jetstackcert-manager-gke-private-clusters/
-  #
-  # source_ranges = ["172.16.0.0/28"]
+  source_ranges = ["172.16.0.0/28"]
 }
 
 ################################################################################
