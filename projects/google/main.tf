@@ -36,6 +36,10 @@ resource "google_project_service" "container" {
   service = "container.googleapis.com"
 }
 
+resource "google_project_service" "dns" {
+  service = "dns.googleapis.com"
+}
+
 resource "google_project_service" "storage" {
   service = "storage-api.googleapis.com"
 }
