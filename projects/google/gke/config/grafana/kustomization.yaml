@@ -1,0 +1,23 @@
+---
+namespace: grafana
+commonLabels:
+  app: grafana
+
+images:
+  - name: grafana/grafana
+    newTag: 6.4.4
+
+resources:
+  - 00-namespace.yaml
+  # - 01-credentials.yaml  # requires hand-editing
+  - 02-statefulset.yaml
+  - 03-service.yaml
+  - 04-ingress.yaml
+
+configMapGenerator:
+  - name: config
+    files:
+      - config/grafana.ini
+  - name: datasources
+    files:
+      - config/datasources/prometheus.yaml

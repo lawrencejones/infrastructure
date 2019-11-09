@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: grafana
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  replicas: 1
+  serviceName: grafana
+  selector:
+    matchLabels: &labels
+      role: backend
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      securityContext:
+        # Modify volumes to be owned and writable by the Grafana default GID
+        fsGroup: 107
+      containers:
+        - name: app
+          image: grafana/grafana:tag
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: credentials
+          ports:
+            - containerPort: 3000
+          livenessProbe: &probe
+            httpGet:
+              path: /api/health
+              port: 3000
+          readinessProbe: *probe
+          volumeMounts:
+            - name: config
+              mountPath: /etc/grafana
+              readOnly: true
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+            - name: pvc-grafana
+              mountPath: /var/lib/grafana
+      volumes:
+        - name: config
+          configMap:
+            name: config
+        - name: datasources
+          configMap:
+            name: datasources
+  volumeClaimTemplates:
+    - metadata:
+        name: pvc-grafana
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 5Gi

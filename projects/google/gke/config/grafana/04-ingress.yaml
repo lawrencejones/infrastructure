@@ -1,0 +1,20 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: grafana
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.allowHTTP: "false"  # Grafana doesn't support upgrading
+spec:
+  tls:
+    - hosts:
+        - grafana.lawrjone.xyz
+      secretName: grafana-lawrjone-xyz
+  rules:
+    - host: grafana.lawrjone.xyz
+      http:
+        paths:
+          - backend:
+              serviceName: grafana
+              servicePort: 3000
