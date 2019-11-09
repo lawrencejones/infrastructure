@@ -3,6 +3,58 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: prometheus
-    static_configs:
-      - targets: ["localhost:9090"]
+  # Activated through prometheus annotations on the pod (not the deployment!).
+  #
+  # This relabelling supports scraping every container port named 'metrics' for
+  # every pod. If a custom path is required, you may set the path using an
+  # annotation.
+  #
+  # template:
+  #   metadata:
+  #     annotations:
+  #       prometheus.io/path: "/metrics_alternative"
+  #
+  - job_name: kubernetes-pods
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      # Only scrape pods that are running, to avoid accidentally discovering
+      # pods that are dead whose IP has been reclaimed by another pod, and
+      # scraping the new one instead.
+      - source_labels: [__meta_kubernetes_pod_phase]
+        regex: Running
+        action: keep
+
+      # Only scrape ports that have the container name set to metrics
+      - source_labels: [__meta_kubernetes_pod_container_port_name]
+        regex: metrics.*
+        action: keep
+
+      # Use annotation to set metric path
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        regex: (.+)
+        target_label: __metrics_path__
+        action: replace
+
+      # Capture pod labels
+      - regex: __meta_kubernetes_pod_label_(.+)
+        replacement: $1
+        action: labelmap
+
+      # Rename common labels to be consistent
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+        action: replace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: instance
+        action: replace
+
+      # Add port label to disambiguate between metrics of the same name coming
+      # from same instance
+      - source_labels: [__address__]
+        regex: .+:(\d+)
+        target_label: port
+        replacement: ${1}
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        target_label: node
+        action: replace

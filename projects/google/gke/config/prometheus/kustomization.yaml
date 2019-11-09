@@ -10,9 +10,10 @@ images:
 resources:
   - 00-namespace.yaml
   - 01-serviceaccount.yaml
-  - 02-statefulset.yaml
-  - 03-service.yaml
-  - 04-ingress.yaml
+  - 02-clusterrolebinding.yaml
+  - 03-statefulset.yaml
+  - 04-service.yaml
+  - 05-ingress.yaml
 
 configMapGenerator:
   - name: config
