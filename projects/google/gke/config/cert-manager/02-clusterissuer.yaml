@@ -1,5 +1,4 @@
-# Provide a single certificate issuer for the entire GKE cluster. We'll validate
-# LetsEncrypt requests by leveraging an ingress called acme-challenge.
+# Provide a single certificate issuer for the entire GKE cluster.
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
@@ -14,8 +13,5 @@ spec:
     solvers:
       - selector: {}  # match all domains
         dns01:
-          cloudflare:
-            email: lawrjone@gmail.com
-            apiKeySecretRef:
-              name: cloudflare-credentials
-              key: api-key
+          clouddns:
+            project: lawrjone

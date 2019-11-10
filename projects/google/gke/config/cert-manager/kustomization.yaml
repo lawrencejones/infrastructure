@@ -7,5 +7,15 @@
 # https://github.com/kubernetes-sigs/kustomize/issues/970
 resources:
   - 01-resources.yaml
-  # - 02-cloudflare-credentials.yaml  # requires hand-editing
-  - 03-clusterissuer.yaml
+  - 02-clusterissuer.yaml
+
+# While only the service account needs the workload identity annotations, it's
+# easiest to use the annotation transformer to add it to everything. No harm,
+# anyway.
+#
+# Older versions of kustomize choke on an empty but defined annotations field,
+# like what cert-manager distributes in its resources.yaml. Use kustomize the
+# binary rather than the one bundled with kubectl if you want this apply to
+# succeed.
+commonAnnotations:
+  iam.gke.io/gcp-service-account: cert-manager@lawrjone.iam.gserviceaccount.com
