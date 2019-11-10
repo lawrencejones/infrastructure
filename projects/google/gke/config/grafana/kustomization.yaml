@@ -6,6 +6,8 @@ commonLabels:
 images:
   - name: grafana/grafana
     newTag: 6.4.4
+  - name: haproxy
+    newTag: 2.0.8
 
 resources:
   - 00-namespace.yaml
@@ -18,6 +20,7 @@ configMapGenerator:
   - name: config
     files:
       - config/grafana.ini
+      - config/haproxy.cfg
   - name: datasources
     files:
       - config/datasources/prometheus.yaml

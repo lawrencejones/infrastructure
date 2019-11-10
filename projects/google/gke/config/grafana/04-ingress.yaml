@@ -5,7 +5,6 @@ metadata:
   name: grafana
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
-    kubernetes.io/ingress.allowHTTP: "false"  # Grafana doesn't support upgrading
 spec:
   tls:
     - hosts:
@@ -17,4 +16,4 @@ spec:
         paths:
           - backend:
               serviceName: grafana
-              servicePort: 3000
+              servicePort: http

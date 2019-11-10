@@ -41,6 +41,19 @@ spec:
               readOnly: true
             - name: pvc-grafana
               mountPath: /var/lib/grafana
+        - name: haproxy
+          image: haproxy:tag
+          ports:
+            - name: http
+              containerPort: 8080
+          command:
+            - haproxy
+            - -f
+            - /etc/app/haproxy.cfg
+          volumeMounts:
+            - name: config
+              mountPath: /etc/app
+              readOnly: true
       volumes:
         - name: config
           configMap:
