@@ -5,7 +5,7 @@
 terraform {
   backend "gcs" {
     bucket = "lawrjone-tfstate"
-    prefix = "projects/google/vault/config"
+    prefix = "projects/vault"
   }
 }
 

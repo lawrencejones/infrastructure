@@ -1,8 +1,13 @@
-# Authenticate against Vault by fetching the root token from GCS and decrypting
-# it every time we boot terraform. This means we need a Google login that has
-# permission to access the key in GCS, and decrypt it using KMS. As this is my
-# personal project, I'm running as me@lawrjone.xyz which is a superuser. For a
-# corporate deployment, this would be the terraform administrator.
+################################################################################
+# Provider
+################################################################################
+
+provider "google" {
+  region  = var.region
+  version = "2.18.1"
+  project = var.default_project
+}
+
 provider "vault" {
   address = "https://vault.lawrjone.xyz"
   token   = data.google_kms_secret.vault_token.plaintext
