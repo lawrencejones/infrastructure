@@ -1,36 +1,10 @@
 ################################################################################
-# Backend
+# GKE
 ################################################################################
 
-terraform {
-  backend "gcs" {
-    bucket = "lawrjone-tfstate"
-    prefix = "projects/google/gke"
-  }
+resource "google_service_account" "gke" {
+  account_id = "gke-primary"
 }
-
-################################################################################
-# Firewall
-################################################################################
-
-resource "google_compute_firewall" "cert_manager" {
-  name        = "cert-manager"
-  description = "Provide access for the API server to contact the cert-manager webhook receiving from the Kubernetes control plane"
-  network     = "default"
-  target_tags = ["gke-primary"]
-  allow {
-    protocol = "TCP"
-    ports    = ["6443"]
-  }
-
-  # This is the GKE control plane network, as configured below:
-  # https://www.revsys.com/tidbits/jetstackcert-manager-gke-private-clusters/
-  source_ranges = ["172.16.0.0/28"]
-}
-
-################################################################################
-# Vault
-################################################################################
 
 # Provide this kubernetes cluster with the ability to access vault, by
 # presenting its own service account token for vaildation back against the GKE
@@ -45,12 +19,19 @@ module "primary_gke_vault_access" {
   kubernetes_cluster_location = google_container_cluster.primary.location
 }
 
-################################################################################
-# GKE
-################################################################################
+resource "google_compute_firewall" "cert_manager" {
+  name        = "cert-manager"
+  description = "Provide access for the API server to contact the cert-manager webhook receiving from the Kubernetes control plane"
+  network     = "default"
+  target_tags = ["gke-primary"]
+  allow {
+    protocol = "TCP"
+    ports    = ["6443"]
+  }
 
-resource "google_service_account" "gke" {
-  account_id = "gke-primary"
+  # This is the GKE control plane network, as configured below:
+  # https://www.revsys.com/tidbits/jetstackcert-manager-gke-private-clusters/
+  source_ranges = ["172.16.0.0/28"]
 }
 
 # Go regional, we're gonna be big. Private cluster is also a good idea, as
