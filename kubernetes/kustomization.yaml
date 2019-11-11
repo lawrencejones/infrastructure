@@ -1,5 +1,5 @@
 ---
-bases:
+resources:
   - cert-manager  # certificate management
   - external-dns  # manage DNS records for cluster resources
   - vault         # secret management
