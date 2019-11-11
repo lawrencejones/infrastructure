@@ -1,8 +1,31 @@
 # Infrastructure
 
-Manages the infrastructure I use for side projects. Before any of the GCP
-terraform can be used, it is required that we provision a service account and
-key for the admin user:
+Manages my infrastructure, mostly for experimenting with side projects.
+
+```
+.
+├── kubernetes
+│   ├── cert-manager
+│   ├── external-dns
+│   ├── grafana
+│   │   └── config
+│   │       └── datasources
+│   ├── prometheus
+│   │   └── config
+│   └── vault
+├── modules
+│   └── gke_vault_access
+└── projects
+    ├── google
+    │   └── modules -> ../../modules
+    ├── lawrencejones.dev
+    └── vault
+```
+
+## Bootstrapping
+
+Before any of the GCP terraform can be used, it is required that we provision a
+service account and key for the admin user:
 
 ```shell
 gcloud iam service-accounts create terraform --project lawrjone
@@ -20,7 +43,7 @@ done
 
 This is not the traditional example where the terraform account exists within an
 administrative project that parents sub-project: I expect not to be creating
-many other GCP projects, given this is a private side-project.
+many other GCP projects, given the small scale of my personal needs.
 
 Set `GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/lawrjone-terraform.json` to
 activate the terraform credentials.

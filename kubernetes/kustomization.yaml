@@ -1,0 +1,7 @@
+---
+bases:
+  - cert-manager  # certificate management
+  - external-dns  # manage DNS records for cluster resources
+  - vault         # secret management
+  - prometheus    # monitoring, automatically scrape cluster
+  - grafana       # visualisation of prometheus
