@@ -22,6 +22,10 @@ variable "kubernetes_cluster_location" {
 # Providers
 ################################################################################
 
+############################################################
+# Vault
+############################################################
+
 provider "vault" {
   address = "https://vault.lawrjone.xyz"
   token   = data.google_kms_secret.vault_token.plaintext
@@ -44,12 +48,10 @@ data "google_kms_secret" "vault_token" {
   crypto_key = "projects/lawrjone/locations/global/keyRings/vault/cryptoKeys/vault-init"
   ciphertext = data.http.root_token_enc.body
 }
-data "google_client_config" "default" {}
 
-data "google_container_cluster" "cluster" {
-  name     = var.kubernetes_cluster_name
-  location = var.kubernetes_cluster_location
-}
+############################################################
+# Kubernetes
+############################################################
 
 provider "kubernetes" {
   load_config_file = false
@@ -58,6 +60,13 @@ provider "kubernetes" {
   token = data.google_client_config.default.access_token
 
   cluster_ca_certificate = base64decode(data.google_container_cluster.cluster.master_auth.0.cluster_ca_certificate)
+}
+
+data "google_client_config" "default" {}
+
+data "google_container_cluster" "cluster" {
+  name     = var.kubernetes_cluster_name
+  location = var.kubernetes_cluster_location
 }
 
 ################################################################################
