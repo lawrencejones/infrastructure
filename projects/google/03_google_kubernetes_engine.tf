@@ -9,6 +9,9 @@ resource "google_service_account" "gke" {
 # Provide this kubernetes cluster with the ability to access vault, by
 # presenting its own service account token for vaildation back against the GKE
 # cluster.
+#
+# Disable this for now, as it will fail while the node pool is scaled down.
+/*
 module "primary_gke_vault_access" {
   source = "./modules/gke_vault_access"
 
@@ -18,6 +21,7 @@ module "primary_gke_vault_access" {
   kubernetes_cluster_name     = google_container_cluster.primary.name
   kubernetes_cluster_location = google_container_cluster.primary.location
 }
+*/
 
 resource "google_compute_firewall" "cert_manager" {
   name        = "cert-manager"
@@ -70,7 +74,7 @@ resource "google_container_cluster" "primary" {
   }
 
   private_cluster_config {
-    enable_private_nodes    = true
+    enable_private_nodes    = var.private_cluster
     enable_private_endpoint = false
     master_ipv4_cidr_block  = "172.16.0.0/28"
   }
@@ -102,7 +106,7 @@ resource "google_container_node_pool" "primary_01" {
   location = var.region
   cluster  = google_container_cluster.primary.name
 
-  node_count = 1
+  node_count = var.node_count
 
   # Hands-free management
   management {

@@ -133,13 +133,17 @@ data "google_compute_network" "default" {
 }
 
 resource "google_compute_router" "default" {
+  count = var.private_cluster ? 1 : 0 # only required if we have a private cluster
+
   name    = "default"
   network = data.google_compute_network.default.name
 }
 
 resource "google_compute_router_nat" "egress" {
+  count = var.private_cluster ? 1 : 0 # only required if we have a private cluster
+
   name   = "egress"
-  router = google_compute_router.default.name
+  router = join("", google_compute_router.default.*.name)
   region = var.region
 
   # We don't need to whitelist anything in this project, so we don't need to
