@@ -93,7 +93,7 @@ resource "vault_kubernetes_auth_backend_role" "default" {
   ]
 
   # https://github.com/hashicorp/vault-plugin-auth-kubernetes/pull/66
-  bound_service_account_names      = split(",", "a*,b*,c*,d*,e*,f*,h*,i*,j*,k*,l*,m*,n*,o*,p*,q*,r*,s*,t*,u*,v*,w*,x*,y*,z*,1*,2*,3*,4*,5*,6*,7*,8*,9*,0*")
+  bound_service_account_names      = formatlist("%s*", split("", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"))
   bound_service_account_namespaces = ["*"]
 }
 
