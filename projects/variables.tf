@@ -3,7 +3,7 @@ variable "region" {
 }
 
 variable "node_count" {
-  default = 1
+  default = 0
 }
 
 variable "default_project" {
