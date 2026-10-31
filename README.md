@@ -1,49 +1,36 @@
 # Infrastructure
 
-Manages my infrastructure, mostly for experimenting with side projects.
+Terraform for my personal infrastructure.
 
 ```
-.
-├── kubernetes
-│   ├── cert-manager
-│   ├── external-dns
-│   ├── grafana
-│   │   └── config
-│   │       └── datasources
-│   ├── prometheus
-│   │   └── config
-│   └── vault
-├── modules
-│   └── gke_vault_access
-└── projects
-    ├── google
-    │   └── modules -> ../../modules
-    ├── lawrencejones.dev
-    └── vault
+projects
+├── lawrjone            # GCP project: blog bucket and deploy identity, storage, DNS zone
+└── lawrencejones.dev   # Cloudflare: lawrencejones.dev DNS and page rules
 ```
 
-## Bootstrapping
+State for every project lives in the `lawrjone-tfstate` bucket, versioned and private.
 
-Before any of the GCP terraform can be used, it is required that we provision a
-service account and key for the admin user:
+## Running Terraform
+
+Authenticate as yourself; there are no service account keys.
 
 ```shell
-gcloud iam service-accounts create terraform --project lawrjone
-gcloud iam service-accounts keys create ~/.config/gcloud/lawrjone-terraform.json --iam-account terraform@lawrjone.iam.gserviceaccount.com --project lawrjone
-
-for role in 'roles/owner' 'roles/storage.admin'; do
-  gcloud projects add-iam-policy-binding lawrjone --project lawrjone --role "${role}" --member serviceAccount:terraform@lawrjone.iam.gserviceaccount.com
-done
-
-# Enable core API services
-for api in 'cloudresourcemanager' 'cloudbilling' 'iam' 'compute'; do
-  gcloud services enable "${api}.googleapis.com"
-done
+gcloud auth application-default login
+cd projects/lawrjone
+terraform init
+terraform plan
 ```
 
-This is not the traditional example where the terraform account exists within an
-administrative project that parents sub-project: I expect not to be creating
-many other GCP projects, given the small scale of my personal needs.
+If application default credentials aren't set up, pass a short-lived token instead:
 
-Set `GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/lawrjone-terraform.json` to
-activate the terraform credentials.
+```shell
+GOOGLE_OAUTH_ACCESS_TOKEN=$(gcloud auth print-access-token) terraform plan
+```
+
+## blog.lawrencejones.dev
+
+The blog is a static site in a GCS bucket served through Cloudflare. GitHub Actions in
+[lawrencejones/blog.lawrencejones.dev](https://github.com/lawrencejones/blog.lawrencejones.dev)
+deploys it, authenticating with Workload Identity Federation: the `github` pool only
+trusts that repository's master branch, so no deploy key exists to leak. The bucket can
+be read by anyone but not listed.
