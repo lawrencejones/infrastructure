@@ -132,6 +132,27 @@ resource "cloudflare_dns_record" "google_mx" {
   ttl      = 1
 }
 
+# SPF: only Google Workspace may send as lawrencejones.dev. Softfail (~all) rather than
+# fail (-all) so mail from a sender not listed here is marked rather than rejected.
+resource "cloudflare_dns_record" "spf" {
+  zone_id = local.zone_id
+  name    = "lawrencejones.dev"
+  type    = "TXT"
+  content = "v=spf1 include:_spf.google.com ~all"
+  ttl     = 1
+}
+
+# DMARC in monitoring mode: receivers deliver as normal but send daily aggregate reports
+# of who is sending as this domain. Once the reports show only legitimate senders,
+# tighten to p=quarantine and then p=reject.
+resource "cloudflare_dns_record" "dmarc" {
+  zone_id = local.zone_id
+  name    = "_dmarc.lawrencejones.dev"
+  type    = "TXT"
+  content = "v=DMARC1; p=none; rua=mailto:me@lawrencejones.dev"
+  ttl     = 1
+}
+
 ################################################################################
 # Verification
 ################################################################################
