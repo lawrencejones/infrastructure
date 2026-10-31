@@ -47,9 +47,14 @@ data "google_iam_policy" "blog" {
     members = ["projectOwner:${local.project}", "projectEditor:${local.project}"]
   }
 
+  # The deployer needs storage.buckets.get too: gcloud storage rsync reads the bucket
+  # before syncing, and objectAdmin only covers objects.
   binding {
-    role    = "roles/storage.legacyBucketReader"
-    members = ["projectViewer:${local.project}"]
+    role = "roles/storage.legacyBucketReader"
+    members = [
+      "projectViewer:${local.project}",
+      "serviceAccount:${google_service_account.blog_deployer.email}",
+    ]
   }
 }
 
